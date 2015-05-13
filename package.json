@@ -1,0 +1,29 @@
+{
+  "name": "plapp.js",
+  "version": "0.0.5",
+  "devDependencies": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:FHIR/fhir.js.git"
+  },
+  "scripts": {
+  },
+  "keywords": [ "fhir", "FHIR" ],
+  "author": [
+    "Maksym Bodnarchuk <bodnarchuk@gmail.com>",
+    "Nikolay Ryzhikov <niquola@gmail.com>"
+    ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/FHIR/fhir.js/issues"
+  },
+  "homepage": "https://github.com/FHIR/fhir.js",
+  "dependencies": {
+    "jasmine-node":"latest",
+    "pg-native":"latest"
+  },
+  "scripts": {
+    "install": "bower prune && bower install"
+  }
+}
