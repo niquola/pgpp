@@ -20,6 +20,8 @@
   },
   "homepage": "https://github.com/FHIR/fhir.js",
   "dependencies": {
+    "jasmine":"latest",
+    "coffee-script":"latest",
     "jasmine-node":"latest",
     "pg-native":"latest"
   },
