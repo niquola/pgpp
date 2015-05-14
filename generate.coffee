@@ -38,7 +38,7 @@ generate_plv8_fn = (mod, k, modules_idx, fn)->
   mods = []
 
   for m of modules_idx
-    mods.push "deps['#{m}'] = function(module, require){#{modules_idx[m].code}};"
+    mods.push "deps['#{m}'] = function(module, exports, require){#{modules_idx[m].code}};"
 
   """
   CREATE OR REPLACE FUNCTION #{k}#{def_fn} AS $$
@@ -48,7 +48,7 @@ generate_plv8_fn = (mod, k, modules_idx, fn)->
   var require = function(dep){
     if(!cache[dep]) {
       var module = {exports: {}};
-      deps[dep](module, require);
+      deps[dep](module, module.exports, require);
       cache[dep] = module.exports;
     }
     return cache[dep]
