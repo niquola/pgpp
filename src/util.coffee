@@ -1,3 +1,2 @@
-module.exports  = 'SELECT * from information_schema.tables'
-
+module.exports  = 'SELECT * from information_schema.routines'
 

@@ -29,17 +29,19 @@ scan = (pth) ->
   plv8_exports = {}
 
   file = require(pth)
-  for k of plv8_exports
-    console.log(generate_plv8_fn(pth, k, modules_idx))
+  for k,v of plv8_exports
+    console.log(generate_plv8_fn(pth, k, modules_idx, v.fn))
 
-generate_plv8_fn = (mod, k, modules_idx)->
+generate_plv8_fn = (mod, k, modules_idx, fn)->
+  def_fn = fn.meta || "() returns json"
+  def_call = fn.toString().split("{")[0].split("function")[1].trim()
   mods = []
 
   for m of modules_idx
     mods.push "deps['#{m}'] = function(module, require){#{modules_idx[m].code}};"
 
   """
-  CREATE OR REPLACE FUNCTION #{k}() returns json AS $$
+  CREATE OR REPLACE FUNCTION #{k}#{def_fn} AS $$
   var deps = {}
   var cache = {}
   #{mods.join("\n")}
@@ -51,8 +53,10 @@ generate_plv8_fn = (mod, k, modules_idx)->
     }
     return cache[dep]
   }
-  return require('#{mod}').#{k}(plv8);
+  return require('#{mod}').#{k}#{def_call};
   $$ LANGUAGE plv8 IMMUTABLE STRICT;
+
+
   """
 
 scan './src/schema'
