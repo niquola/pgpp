@@ -1,7 +1,6 @@
-require('coffee-script/register');
+require('coffee-script/register')
 Module = require("module")
 
-plexport_prefix = 'pl_'
 currentModule = null
 modules_idx = {}
 plv8_exports = {}
@@ -15,11 +14,9 @@ Module::require = (fl) ->
 oldcompile = Module::_compile
 
 Module::_compile = (answer, filename) ->
-  modules_idx[currentModule] =
-    filename: filename
-    code: answer
+  modules_idx[currentModule] ={ filename: filename, code: answer}
   res = oldcompile.apply(this, arguments)
-  for k,v of @exports when k.indexOf(plexport_prefix) == 0
+  for k,v of @exports when v.plv8?
       plv8_exports[k] ={fn: v, filename: filename}
   res
 
@@ -28,23 +25,28 @@ scan = (pth) ->
   modules_idx = {}
   plv8_exports = {}
 
+  delete require.cache
+
   file = require(pth)
+  modules_js = generate_modules(modules_idx)
   for k,v of plv8_exports
-    console.log(generate_plv8_fn(pth, k, modules_idx, v.fn))
+    console.log(generate_plv8_fn(pth, k, modules_js, v.fn))
 
-generate_plv8_fn = (mod, k, modules_idx, fn)->
-  def_fn = fn.meta || "() returns json"
-  def_call = fn.toString().split("{")[0].split("function")[1].trim()
+generate_modules = (modules_idx)->
   mods = []
+  for m,v of modules_idx
+    mods.push "deps['#{m}'] = function(module, exports, require){#{v.code}};"
+  mods.join("\n")
 
-  for m of modules_idx
-    mods.push "deps['#{m}'] = function(module, exports, require){#{modules_idx[m].code}};"
+generate_plv8_fn = (mod, k, modules_js, fn)->
+  def_fn = fn.plv8
+  def_call = fn.toString().split("{")[0].split("function")[1].trim()
 
   """
-  CREATE OR REPLACE FUNCTION #{k}#{def_fn} AS $$
+  CREATE OR REPLACE FUNCTION #{def_fn} AS $$
   var deps = {}
   var cache = {}
-  #{mods.join("\n")}
+  #{modules_js}
   var require = function(dep){
     if(!cache[dep]) {
       var module = {exports: {}};
@@ -55,8 +57,8 @@ generate_plv8_fn = (mod, k, modules_idx, fn)->
   }
   return require('#{mod}').#{k}#{def_call};
   $$ LANGUAGE plv8 IMMUTABLE STRICT;
-
-
   """
 
-scan './src/schema'
+#scan './src/crud'
+#scan './src/json'
+scan './src/idx'

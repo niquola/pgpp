@@ -1,2 +1,3 @@
-module.exports  = 'SELECT * from information_schema.routines'
+module.exports.table_name = (resource_type)->
+  resource_type.toLowerCase()
 

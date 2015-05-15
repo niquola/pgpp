@@ -26,7 +26,8 @@
     "pg-native":"latest",
     "browserify":"latest",
     "coffeeify": "latest",
-    "query-string": "latest"
+    "query-string": "latest",
+    "pure-uuid": "latest"
   },
   "scripts": {
     "install": "bower prune && bower install"

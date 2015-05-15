@@ -1,19 +1,61 @@
-sql = require('./util')
-qs = require('query-string')
+util = require('./util')
 
-module.exports.pl_tables = (plv8)->
-  plv8.execute(sql)
-    .map((x) -> x.routine_name)
-    .sort()
+init = (plv8)->
+  plv8.execute """
+    CREATE TABLE resource (
+      version_id text,
+      logical_id text,
+      resource_type text,
+      updated TIMESTAMP WITH TIME ZONE,
+      published  TIMESTAMP WITH TIME ZONE,
+      content jsonb
+    )
+    """
 
-module.exports.pl_tables.meta = "() RETURNS json"
+  plv8.execute """
+    CREATE TABLE resource_history (
+      version_id text,
+      logical_id text,
+      resource_type text,
+      updated TIMESTAMP WITH TIME ZONE,
+      published  TIMESTAMP WITH TIME ZONE,
+      content jsonb
+    )
+    """
+exports.init  = init
 
-module.exports.pl_add = (plv8, x, y)->
-  x + y
+drop_table = (plv8, resource_type)->
+  table_name = util.table_name(resource_type)
+  plv8.execute("""drop table if exists #{table_name}""")
+  plv8.execute("""drop table if exists #{table_name}_history""")
 
-module.exports.pl_add.meta = "(x int, y int) RETURNS int"
+exports.drop_table  = drop_table
 
-module.exports.pl_parse = (plv8, str)->
-  qs.parse(str)
+generate_table = (plv8, resource_type)->
+  table_name = util.table_name(resource_type)
+  plv8.execute """CREATE TABLE "#{table_name}" () INHERITS (resource)"""
+  plv8.execute """
+    ALTER TABLE "#{table_name}"
+      ADD PRIMARY KEY (logical_id),
+      ALTER COLUMN updated SET NOT NULL,
+      ALTER COLUMN updated SET DEFAULT CURRENT_TIMESTAMP,
+      ALTER COLUMN published SET NOT NULL,
+      ALTER COLUMN published SET DEFAULT CURRENT_TIMESTAMP,
+      ALTER COLUMN content SET NOT NULL,
+      ALTER COLUMN resource_type SET DEFAULT '#{resource_type}'
+    """
+  plv8.execute """CREATE UNIQUE INDEX #{table_name}_version_id_idx ON "#{table_name}" (version_id)"""
+  plv8.execute """CREATE TABLE "#{table_name}_history" () INHERITS (resource_history)"""
 
-module.exports.pl_parse.meta = "(str text) RETURNS json"
+  plv8.execute """
+    ALTER TABLE "#{table_name}_history"
+      ADD PRIMARY KEY (version_id),
+      ALTER COLUMN updated SET NOT NULL,
+      ALTER COLUMN updated SET DEFAULT CURRENT_TIMESTAMP,
+      ALTER COLUMN published SET NOT NULL,
+      ALTER COLUMN published SET DEFAULT CURRENT_TIMESTAMP,
+      ALTER COLUMN content SET NOT NULL,
+      ALTER COLUMN resource_type SET DEFAULT '#{resource_type}';
+    """
+
+exports.generate_table = generate_table
