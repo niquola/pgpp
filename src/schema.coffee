@@ -50,10 +50,6 @@ generate_table = (plv8, resource_type)->
   plv8.execute """
     ALTER TABLE "#{table_name}_history"
       ADD PRIMARY KEY (version_id),
-      ALTER COLUMN updated SET NOT NULL,
-      ALTER COLUMN updated SET DEFAULT CURRENT_TIMESTAMP,
-      ALTER COLUMN published SET NOT NULL,
-      ALTER COLUMN published SET DEFAULT CURRENT_TIMESTAMP,
       ALTER COLUMN content SET NOT NULL,
       ALTER COLUMN resource_type SET DEFAULT '#{resource_type}';
     """

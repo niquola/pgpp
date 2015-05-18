@@ -1,4 +1,4 @@
-plv8 = require('../src/plv8')
+plv8 = require('../lib/plv8')
 schema = require('../src/schema')
 
 describe "A suite", ()->

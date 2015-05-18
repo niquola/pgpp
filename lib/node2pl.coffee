@@ -1,4 +1,6 @@
 require('coffee-script/register')
+path = require('path')
+plv8 = require('./plv8')
 Module = require("module")
 
 currentModule = null
@@ -20,21 +22,34 @@ Module::_compile = (answer, filename) ->
       plv8_exports[k] ={fn: v, filename: filename}
   res
 
+_isAbsolute = (pth)->
+  path.resolve(pth) == path.normalize(pth)
+
 scan = (pth) ->
+  unless _isAbsolute(pth)
+    pth = path.normalize(path.join(path.dirname(module.parent.filename), pth))
+
   currentModule = null
+  Module._cache = {}
   modules_idx = {}
   plv8_exports = {}
 
   delete require.cache
 
+  #TODO: calculate path from calling module
   file = require(pth)
+
   modules_js = generate_modules(modules_idx)
   for k,v of plv8_exports
-    console.log(generate_plv8_fn(pth, k, modules_js, v.fn))
+    sql = generate_plv8_fn(pth, k, modules_js, v.fn)
+    console.log('-- Load ', v.fn.plv8)
+    #console.log(sql)
+    plv8.execute(sql)
 
 generate_modules = (modules_idx)->
   mods = []
   for m,v of modules_idx
+    console.log("dep: #{m}")
     mods.push "deps['#{m}'] = function(module, exports, require){#{v.code}};"
   mods.join("\n")
 
@@ -58,7 +73,4 @@ generate_plv8_fn = (mod, k, modules_js, fn)->
   return require('#{mod}').#{k}#{def_call};
   $$ LANGUAGE plv8 IMMUTABLE STRICT;
   """
-
-#scan './src/crud'
-#scan './src/json'
-scan './src/idx'
+exports.scan = scan
