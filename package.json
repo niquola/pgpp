@@ -27,6 +27,7 @@
     "browserify":"latest",
     "coffeeify": "latest",
     "query-string": "latest",
+    "jison": "latest",
     "pure-uuid": "latest"
   },
   "scripts": {
