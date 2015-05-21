@@ -1,7 +1,7 @@
 fs = require("fs")
 jison = require("jison")
 
-bnf = fs.readFileSync("filter.jison", "utf8")
+bnf = fs.readFileSync("#{__dirname}/filter.jison", "utf8")
 parser = new jison.Parser(bnf)
 
 

@@ -40,5 +40,6 @@ load_functions = ()->
   np.scan './src/idx'
   np.scan './src/search'
 
+init()
 load_metadata()
 load_functions()

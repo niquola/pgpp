@@ -2,7 +2,11 @@ util = require('./util')
 
 init = (plv8)->
   plv8.execute """
-    CREATE TABLE resource (
+  create extension if not exists pgcrypto;
+  """
+
+  plv8.execute """
+    CREATE TABLE IF NOT EXISTS resource (
       version_id text,
       logical_id text,
       resource_type text,
@@ -13,7 +17,7 @@ init = (plv8)->
     """
 
   plv8.execute """
-    CREATE TABLE resource_history (
+    CREATE TABLE IF NOT EXISTS resource_history (
       version_id text,
       logical_id text,
       resource_type text,

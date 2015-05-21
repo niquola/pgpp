@@ -31,6 +31,5 @@
     "pure-uuid": "latest"
   },
   "scripts": {
-    "install": "bower prune && bower install"
   }
 }
