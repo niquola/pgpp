@@ -79,5 +79,3 @@ sql = (q)->
   _select(q)
 
 exports.sql = sql
-
-#console.log sql()

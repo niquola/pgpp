@@ -1,0 +1,12 @@
+{
+  "src/*.coffee": {
+    "type": "src",
+    "alternate": "spec/{}_spec.coffee",
+    "make": "coffee {file} -n"
+  },
+  "spec/*_spec.coffee": {
+    "type": "test",
+    "alternate": "src/{}.coffee",
+    "make": "jasmine-node {file} --coffee"
+  }
+}
