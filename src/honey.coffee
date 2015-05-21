@@ -34,13 +34,13 @@ _columns = (x)->
   "SELECT #{list.join(', ')}"
 
 _table = (y)->
-  if isArray then "#{y[0]} #{y[1]}" else y
+  if isArray(y) then "#{y[0]} #{y[1]}" else y
 
 _tables = (x)->
   return unless x
   throw new Exception('from: [array] expected)') unless isArray(x)
   x = x.map(_table)
-  list = if isArray(x) then x.join(', ') else x
+  list = x.map(_table).join(', ')
   "FROM #{list}"
 
 _expression = (x)->

@@ -5,11 +5,6 @@ bnf = fs.readFileSync("#{__dirname}/filter.jison", "utf8")
 parser = new jison.Parser(bnf)
 
 
-strs = [
-  'name eq "ups"'
-  'given eq "peter" and birthdate ge 2014-10-10'
-]
-
 
 mkbinop = (op)->
   (ast)->
@@ -31,6 +26,10 @@ to_sql = (ast)->
   return "FAIL" unless fn
   fn(ast)
 
+strs = [
+  'name eq "ups"'
+  'given eq "peter" and birthdate ge 2014-10-10'
+]
 
 for str in strs
   ast = parser.parse(str)
