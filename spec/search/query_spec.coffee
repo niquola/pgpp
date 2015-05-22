@@ -4,6 +4,21 @@ console.log q
 
 tq =
   resourceType: 'Patient'
+  customQuery:
+    name: '????'
+    params: []
+  result:
+    sort: [
+      ['asc', 'name']
+      ['desc', 'birthDate']
+    ]
+    count: 10
+    revincludde: []
+    summary: true # false
+    include: [
+      'MedicationDispense.authorizingPrescription',
+      'MedicationPrescription.prescriber'
+    ]
   params: [
     'AND',
     {param:
@@ -12,8 +27,8 @@ tq =
      element:
        path: 'Patient.name'
        type: 'HumanName',
-     operator: 'eq'
-     value: 'ivan' },
+     operator: 'eq' # means operator + modifier
+     value: 'ivan'},
     {param:
       name: 'birthdate'
       type: 'date'
@@ -25,6 +40,7 @@ tq =
 
 res = q(tq)
 console.log res
+console.log " "
 
 describe "A suite", ()->
   it "contains spec with an expectation", ()->
@@ -96,5 +112,16 @@ query =
         operator: '='
         value: ['x','y']
       ]
+      joins:
+        organization:
+          resourceType: 'Organization'
+          on: ["logical_ids(content, '{subject}')", "logical_id"]
+          params:[
+            'and',
+            param: {name: 'title', type: 'string'}
+            element: {path: 'Organization.name', type: 'string'}
+            operator: '='
+            value: ['x']
+          ]
 
 console.log q(query)
