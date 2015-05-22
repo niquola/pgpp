@@ -26,9 +26,7 @@ _expressions =
       eq: (p)-> "#{p.param.name} ilike ???"
       _else: (p)-> "#{p.param.name} = ???"
 
-#should be recursive
-_table_name = (rt)->
-  rt.toLowerCase()
+_table_name = (rt)-> rt.toLowerCase()
 
 _joins = (q)->
   return "" unless q.joins
@@ -39,7 +37,6 @@ _joins = (q)->
       #{_joins(v)}
     """
   res.join "\n"
-
 
 _cond_expression = (p)->
   etype = _expressions[p.param.type] || _expressions._else
