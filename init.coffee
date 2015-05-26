@@ -1,3 +1,11 @@
+Client = require('pg-native')
+
+client = new Client()
+client.connectSync('postgres://root:root@localhost:5432/postgres')
+# client.querySync('CREATE DATABASE test;')
+# client.querySync('DROP DATABASE test;')
+client.end()
+
 plv8 = require('./lib/plv8')
 sch = require('./src/schema')
 crud = require('./src/crud')
@@ -34,6 +42,7 @@ load_metadata = ()->
 load_functions = ()->
   plv8.execute('DROP SCHEMA IF EXISTS fhir CASCADE')
   plv8.execute('CREATE SCHEMA fhir')
+  plv8.execute('CREATE EXTENSION plv8')
   np = require('./lib/node2pl')
   np.scan './src/crud'
   np.scan './src/json'

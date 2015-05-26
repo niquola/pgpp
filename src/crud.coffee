@@ -2,13 +2,16 @@ util = require('./util')
 uuid = (plv8)->
   plv8.execute('select gen_random_uuid() as uuid')[0].uuid
 
+exports.uuid = uuid
+
 load_bundle = (plv8, bundle)->
 
 create = (plv8, resource)->
   # TODO check for resource table
   resource_type = resource.resourceType
   table_name = util.table_name(resource_type)
-  logical_id = resource.id
+  logical_id = resource.id || uuid(plv8)
+  resource.id = logical_id
   version_id = (resource.meta && resource.meta.versionId) ||  uuid(plv8)
   resource.meta ||= {}
   resource.meta.versionId = version_id
@@ -38,9 +41,9 @@ read = (plv8, rt, logical_id)->
    """, [logical_id]
 
   if res.length == 1
-    return res[0].content
+    return JSON.parse(res[0].content)
   else
-    {resourceType: 'OperationOutcome'}
+    {resourceType: 'OperationOutcome', message: 'Not found'}
 
 read.plv8 = 'fhir.read(rt text, logical_id text) returns json'
 exports.read = read
@@ -59,7 +62,7 @@ vread = (plv8, rt, version_id)->
        WHERE version_id = $1
      """, [version_id]
   if res.length == 1
-    return res[0].content
+    return JSON.parse(res[0].content)
   else
     {resourceType: 'OperationOutcome'}
 
@@ -74,4 +77,32 @@ destroy = (plv8, rt, logical_id)->
   resource
 
 destroy.plv8 = 'fhir.destroy(rt text, logical_id text) returns json'
-exports.destroy = destroy
+exports.delete = destroy
+
+update = (plv8, resource)->
+  table_name = util.table_name(resource.resourceType)
+  logical_id = resource.id
+  sql = """
+    INSERT INTO "#{table_name}_history"
+    (logical_id, version_id, published, updated, content)
+    SELECT
+    logical_id, version_id, published, updated, content
+    FROM "#{table_name}" WHERE logical_id = $1 LIMIT 1
+  """
+  plv8.execute(sql, [logical_id])
+  logical_id = resource.id
+  version_id = uuid(plv8)
+
+  resource.meta ||= {}
+  resource.meta.versionId = version_id
+
+  plv8.execute """
+    UPDATE #{table_name}
+    SET version_id = $2,
+    content = $3
+    WHERE logical_id = $1
+    """, [logical_id, version_id, JSON.stringify(resource)]
+
+  resource
+
+exports.update = update

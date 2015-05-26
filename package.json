@@ -22,7 +22,7 @@
   "dependencies": {
     "jasmine":"latest",
     "coffee-script":"latest",
-    "jasmine-node":"latest",
+    "jasmine-node": "latest",
     "pg-native":"latest",
     "browserify":"latest",
     "coffeeify": "latest",

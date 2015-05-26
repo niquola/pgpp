@@ -3,6 +3,7 @@ util = require('./util')
 init = (plv8)->
   plv8.execute """
   create extension if not exists pgcrypto;
+  create extension if not exists plv8;
   """
 
   plv8.execute """
@@ -35,8 +36,17 @@ drop_table = (plv8, resource_type)->
 
 exports.drop_table  = drop_table
 
+table_exists = (plv8, table_name)->
+  result = plv8.execute """
+    SELECT true FROM information_schema.tables WHERE table_name = $1;
+  """, [table_name]
+  result.length > 0
+
+exports.table_exists = table_exists
+
 generate_table = (plv8, resource_type)->
   table_name = util.table_name(resource_type)
+  return if table_exists(plv8, table_name)
   plv8.execute """CREATE TABLE "#{table_name}" () INHERITS (resource)"""
   plv8.execute """
     ALTER TABLE "#{table_name}"
