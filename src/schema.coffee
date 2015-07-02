@@ -1,38 +1,33 @@
 util = require('./util')
+h = require('./honey')
 
 init = (plv8)->
-  plv8.execute """
-  create extension if not exists pgcrypto;
-  create extension if not exists plv8;
-  """
 
-  plv8.execute """
-    CREATE TABLE IF NOT EXISTS resource (
-      version_id text,
-      logical_id text,
-      resource_type text,
-      updated TIMESTAMP WITH TIME ZONE,
-      published  TIMESTAMP WITH TIME ZONE,
-      content jsonb
-    )
-    """
+  TZ = "TIMESTAMP WITH TIME ZONE"
 
-  plv8.execute """
-    CREATE TABLE IF NOT EXISTS resource_history (
-      version_id text,
-      logical_id text,
-      resource_type text,
-      updated TIMESTAMP WITH TIME ZONE,
-      published  TIMESTAMP WITH TIME ZONE,
-      content jsonb
+  for ex in ["pgcrypto", "plv8"]
+    plv8.execute "create extension if not exists #{ex}"
+
+  for tbl in ["resource", "resource_history"]
+    plv8.execute h.sql(
+      create: "table"
+      name: tbl
+      columns:
+        version_id: "text"
+        logical_id: ["text"]
+        resource_type: ["text"]
+        updated: [TZ]
+        published: [TZ]
+        content: ["jsonb"]
     )
-    """
+
 exports.init  = init
 
 drop_table = (plv8, resource_type)->
   table_name = util.table_name(resource_type)
-  plv8.execute("""drop table if exists #{table_name}""")
-  plv8.execute("""drop table if exists #{table_name}_history""")
+
+  for tbl in [table_name, "#{table_name}_history"]
+    plv8.execute("""drop table if exists #{tbl}""")
 
 exports.drop_table  = drop_table
 
